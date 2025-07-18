@@ -43,9 +43,10 @@ import {
 } from 'lucide-react';
 
 import TravelPlan from './TravelPlan';
+import { TravelPlanShimmer, MapSearchShimmer } from './ShimmerUI';
 import axios from 'axios';
 
-export default function App() {
+export default function Dashboard() {
   const [selectedBeach, setSelectedBeach] = useState(null);
   const [sections, setSections] = useState(null);
   const [selectedState, setSelectedState] = useState('All States');
@@ -55,7 +56,9 @@ export default function App() {
   const [showSearchForm, setShowSearchForm] = useState(false); // For inline form toggle
   const [mapSearchQuery, setMapSearchQuery] = useState('');
   const [searchedDestination, setSearchedDestination] = useState(null);
-  const [searchData, setSearchData] = useState('')
+  const [searchData, setSearchData] = useState('');
+  const [isLoadingTravelPlan, setIsLoadingTravelPlan] = useState(false);
+  const [isLoadingMapData, setIsLoadingMapData] = useState(false);
   
   // User profile data - using mock user for now
   const user = 'amanc5922@gmail.com';
@@ -134,9 +137,7 @@ export default function App() {
   })
 
   const changeHandler = (e) => {
-    
-      // console.log("hello");
-      setFormData({
+    setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
@@ -148,7 +149,9 @@ export default function App() {
     const username = 'aman@gmail.com'; // Replace with real values
     const password = '1234';
     const authHeader = 'Basic ' + btoa(username + ':' + password);
-    console.log("Hello");              
+    
+    setIsLoadingTravelPlan(true);
+    
     try{
       const response = await axios.post("http://localhost:8080/api/generate",
         {
@@ -170,15 +173,18 @@ export default function App() {
     }catch(e){
         console.log("Error");
         toast.error("Error");
+    } finally {
+      setIsLoadingTravelPlan(false);
     }
-     
-   
   };
 
    const renderSearchTab = () => (
     <div className="space-y-8">
-      {/* Show travel plan if available */}
-      {sections && (
+      {/* Show shimmer while loading travel plan */}
+      {isLoadingTravelPlan && <TravelPlanShimmer />}
+      
+      {/* Show travel plan if available and not loading */}
+      {sections && !isLoadingTravelPlan && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">Your Travel Plan</h2>
@@ -197,8 +203,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Search form - only show if no travel plan is displayed */}
-      {!sections && (
+      {/* Search form - only show if no travel plan is displayed and not loading */}
+      {!sections && !isLoadingTravelPlan && (
         <>
           {/* Hero Section with Search */}
           <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white">
@@ -295,11 +301,11 @@ export default function App() {
                         <span>Back to Search</span>
                       </button>
                       <button 
-                        disabled={!formData.start || !formData.end || !formData.startDate || !formData.endDate}
+                        disabled={!formData.start || !formData.end || !formData.startDate || !formData.endDate || isLoadingTravelPlan}
                         type="submit" 
                         className="group flex items-center space-x-2 px-8 py-3 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
                       >
-                        <span>Generate Trip Plan</span>
+                        <span>{isLoadingTravelPlan ? 'Generating...' : 'Generate Trip Plan'}</span>
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                       </button>
                     </div>
@@ -312,6 +318,7 @@ export default function App() {
       )}
     </div>
   );
+  
   const [comingData, setComingData] = useState(null);
   const FlyToOnAPICall = ({ targetCoords }) => {
   const map = useMap();
@@ -332,11 +339,8 @@ export default function App() {
     const password = '1234';
     const authHeader = 'Basic ' + btoa(username + ':' + password);
     if(searchData){
+      setIsLoadingMapData(true);
       try{
-      
-        
-        
-        
         const response = await axios.get(`http://localhost:8080/search/analyzeData/${searchData}`, 
         {
             headers:{
@@ -354,6 +358,8 @@ export default function App() {
         
       }catch(e){
         toast.error("Error fetching destination data");
+      } finally {
+        setIsLoadingMapData(false);
       }
     }
   }
@@ -377,53 +383,59 @@ export default function App() {
             </div>
             <button 
               onClick={apiDataForMap} 
-              className="group flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[120px]"
+              disabled={isLoadingMapData}
+              className="group flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span>Search</span>
+              <span>{isLoadingMapData ? 'Searching...' : 'Search'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Interactive Map */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Interactive Map</h2>
-          {!searchData && (
-            <p className="text-gray-600 text-sm mt-1">Enter a destination in the search bar above</p>
-          )}
-        </div>
-        
-        <div className="relative h-96 overflow-hidden">
-          <MapContainer
-              center={{ lat: 26.8333, lng: 80.95 }} // Center of India
-              zoom={5}
-              scrollWheelZoom={true}
-              className="h-full w-full"
-              
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              />
-              <FlyToOnAPICall targetCoords={targetCoords} />
-                {comingData &&
-                  <Marker  position={[comingData.latitude, comingData.longitude]}>
-                  {/* <Popup>
-                    <strong>{beach.name}</strong><br />
-                    State: {beach.state}<br />
-                    Safety: {beach.safety}
-                  </Popup> */}
-                </Marker>
-                }
-            </MapContainer>
-          
-        </div>
-      </div>
+      {/* Show shimmer while loading map data */}
+      {isLoadingMapData && <MapSearchShimmer />}
 
-      {/* Destination Details (shown when searched) */}
-      {comingData && (
+      {/* Interactive Map - only show when not loading */}
+      {!isLoadingMapData && (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">Interactive Map</h2>
+            {!searchData && (
+              <p className="text-gray-600 text-sm mt-1">Enter a destination in the search bar above</p>
+            )}
+          </div>
+          
+          <div className="relative h-96 overflow-hidden">
+            <MapContainer
+                center={{ lat: 26.8333, lng: 80.95 }} // Center of India
+                zoom={5}
+                scrollWheelZoom={true}
+                className="h-full w-full"
+                
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                <FlyToOnAPICall targetCoords={targetCoords} />
+                  {comingData &&
+                    <Marker  position={[comingData.latitude, comingData.longitude]}>
+                    {/* <Popup>
+                      <strong>{beach.name}</strong><br />
+                      State: {beach.state}<br />
+                      Safety: {beach.safety}
+                    </Popup> */}
+                  </Marker>
+                  }
+              </MapContainer>
+            
+          </div>
+        </div>
+      )}
+
+      {/* Destination Details (shown when searched and not loading) */}
+      {comingData && !isLoadingMapData && (
         <div className="space-y-6">
           {/* Beach Header */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
