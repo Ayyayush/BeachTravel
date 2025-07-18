@@ -27,33 +27,39 @@ const AuthPage = ({ onLogin, onCancel }) => {
     const username = 'aman@gmail.com'; // Replace with real values
     const password = '1234';
     const authHeader = 'Basic ' + btoa(username + ':' + password);
-    try{
+    
     if (isSignIn) {
-      const response = await axios.post("http://localhost:8080/login", {
-          email: formData.email,
-          password: formData.password
-      },
-      {
-          headers:{
-              Authorization: authHeader,
-             'Content-Type': 'application/json'
+      onLogin(formData.email);
+      // try{
+      //   const response = await axios.post("http://localhost:8080/login", {
+      //     email: formData.email,
+      //     password: formData.password
+      // },
+      // {
+      //     headers:{
+      //         Authorization: authHeader,
+      //        'Content-Type': 'application/json'
 
-          }
-      }
-      );
-      if (response.status === 200) {
-        onLogin(formData.email); // Success
-      }  
-       else{
-           toast.error("Username or password is incorrect");
-       } 
-      
+      //     }
+      // }
+      // );
+      //  onLogin(formData.email); 
+      // }catch(e){
+      //     if (e.response.status === 401) {
+      //         toast.error("Usename or Password is wrong");
+      //    }
+      //    else{
+      //         toast.error("Network Error");
+      //    }
+      // }
     } else {
       if (formData.password !== formData.confirmPassword) {
         toast.error('Passwords do not match!');
         return;
       }
-      const response = await axios.post("http://localhost:8080/register", {
+      try{
+
+          const response = await axios.post("http://localhost:8080/register", {
           email: formData.email,
           password: formData.password
       },
@@ -65,28 +71,20 @@ const AuthPage = ({ onLogin, onCancel }) => {
           }
       }
       );
-      if (response.status === 200) {
-         toast.success("SuccessFully Registered");
-         setIsSignIn(true);
-      }  
-       else{
-           toast.error("User already exists");
-       } 
+      if(response.data.toLowerCase().includes('success')){
+          setIsSignIn(true);
+      }
+      else{
+        toast.error("User Already Exists");
+      }
+      }catch(e){
+          toast.error("Network error");
+      }
+      
+      
       
     }
-  }catch (error) {
-    if (error.response) {
-      if (error.response.status === 401) {
-        alert("Unauthorized. Check Basic Auth credentials.");
-      } else if (error.response.status === 404) {
-        alert("User not found. Please sign up.");
-      } else {
-        alert(`Error: ${error.response.data.message || 'Something went wrong.'}`);
-      }
-    } else {
-      alert("Network error or server unreachable.");
-    }
-  }
+  
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'
 import { 
   Shield, 
   AlertTriangle, 
@@ -28,225 +29,36 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
     alerts: false
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-
-  // Enhanced beach search functionality
-  const searchBeaches = async (query) => {
-    if (query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    
-    // Simulate API search - replace with actual beach search API
-    const mockResults = [
-      'Marina Beach, Chennai',
-      'Kovalam Beach, Kerala', 
-      'Calangute Beach, Goa',
-      'Baga Beach, Goa',
-      'Anjuna Beach, Goa',
-      'Puri Beach, Odisha',
-      'Digha Beach, West Bengal',
-      'Varkala Beach, Kerala',
-      'Radhanagar Beach, Andaman',
-      'Juhu Beach, Mumbai',
-      'Chowpatty Beach, Mumbai',
-      'Mahabalipuram Beach, Tamil Nadu',
-      'Pondicherry Beach',
-      'Gokarna Beach, Karnataka',
-      'Om Beach, Karnataka',
-      'Murudeshwar Beach, Karnataka',
-      'Tarkarli Beach, Maharashtra',
-      'Kashid Beach, Maharashtra',
-      'Mandrem Beach, Goa',
-      'Palolem Beach, Goa',
-      'Arambol Beach, Goa',
-      'Candolim Beach, Goa',
-      'Morjim Beach, Goa',
-      'Agonda Beach, Goa',
-      'Cherai Beach, Kerala',
-      'Marari Beach, Kerala',
-      'Bekal Beach, Kerala',
-      'Kappad Beach, Kerala',
-      'Lighthouse Beach, Kerala',
-      'Elliot Beach, Chennai',
-      'Besant Nagar Beach, Chennai',
-      'Dhanushkodi Beach, Tamil Nadu',
-      'Kanyakumari Beach, Tamil Nadu',
-      'Rameswaram Beach, Tamil Nadu',
-      'Visakhapatnam Beach, Andhra Pradesh',
-      'Rushikonda Beach, Andhra Pradesh',
-      'Yarada Beach, Andhra Pradesh',
-      'Chandrabhaga Beach, Odisha',
-      'Gopalpur Beach, Odisha',
-      'Chilika Lake, Odisha',
-      'Mandarmani Beach, West Bengal',
-      'Shankarpur Beach, West Bengal',
-      'Bakkhali Beach, West Bengal',
-      'Neil Island Beach, Andaman',
-      'Ross Island Beach, Andaman',
-      'Elephant Beach, Andaman',
-      'Corbyn Cove Beach, Andaman',
-      'Wandoor Beach, Andaman'
-    ].filter(beach => 
-      beach.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setSearchResults(mockResults.slice(0, 8));
-  };
-
-  const mockAnalysisData = {
-    'Marina Beach, Chennai': {
-      safetyStatus: 'safe',
-      safetyScore: 85,
-      currentConditions: {
-        waveHeight: 1.2,
-        windSpeed: 15,
-        windDirection: 'NE',
-        waterTemp: 28,
-        visibility: 8,
-        waterQuality: 'good',
-        currentStrength: 'moderate'
-      },
-      activities: {
-        swimming: { status: 'safe', score: 90 },
-        surfing: { status: 'caution', score: 65 },
-        boating: { status: 'safe', score: 85 },
-        fishing: { status: 'safe', score: 80 },
-        diving: { status: 'caution', score: 70 }
-      },
-      alerts: [],
-      forecast: [
-        { time: '12:00', waveHeight: 1.3, windSpeed: 16, safety: 'safe' },
-        { time: '15:00', waveHeight: 1.5, windSpeed: 18, safety: 'safe' },
-        { time: '18:00', waveHeight: 1.4, windSpeed: 14, safety: 'safe' }
-      ],
-      lastUpdated: new Date().toISOString()
-    },
-    'Kovalam Beach, Kerala': {
-      safetyStatus: 'caution',
-      safetyScore: 60,
-      currentConditions: {
-        waveHeight: 2.8,
-        windSpeed: 25,
-        windDirection: 'SW',
-        waterTemp: 30,
-        visibility: 6,
-        waterQuality: 'moderate',
-        currentStrength: 'strong'
-      },
-      activities: {
-        swimming: { status: 'caution', score: 55 },
-        surfing: { status: 'safe', score: 85 },
-        boating: { status: 'caution', score: 60 },
-        fishing: { status: 'unsafe', score: 30 },
-        diving: { status: 'unsafe', score: 25 }
-      },
-      alerts: ['High wave warning', 'Strong current advisory'],
-      forecast: [
-        { time: '12:00', waveHeight: 3.0, windSpeed: 28, safety: 'caution' },
-        { time: '15:00', waveHeight: 3.2, windSpeed: 30, safety: 'unsafe' },
-        { time: '18:00', waveHeight: 2.9, windSpeed: 26, safety: 'caution' }
-      ],
-      lastUpdated: new Date().toISOString()
-    },
-    'Calangute Beach, Goa': {
-      safetyStatus: 'safe',
-      safetyScore: 78,
-      currentConditions: {
-        waveHeight: 1.5,
-        windSpeed: 12,
-        windDirection: 'W',
-        waterTemp: 29,
-        visibility: 9,
-        waterQuality: 'good',
-        currentStrength: 'mild'
-      },
-      activities: {
-        swimming: { status: 'safe', score: 85 },
-        surfing: { status: 'safe', score: 75 },
-        boating: { status: 'safe', score: 90 },
-        fishing: { status: 'safe', score: 80 },
-        diving: { status: 'safe', score: 70 }
-      },
-      alerts: [],
-      forecast: [
-        { time: '12:00', waveHeight: 1.4, windSpeed: 14, safety: 'safe' },
-        { time: '15:00', waveHeight: 1.6, windSpeed: 16, safety: 'safe' },
-        { time: '18:00', waveHeight: 1.3, windSpeed: 10, safety: 'safe' }
-      ],
-      lastUpdated: new Date().toISOString()
-    },
-    'Radhanagar Beach, Andaman': {
-      safetyStatus: 'safe',
-      safetyScore: 92,
-      currentConditions: {
-        waveHeight: 0.8,
-        windSpeed: 8,
-        windDirection: 'E',
-        waterTemp: 27,
-        visibility: 12,
-        waterQuality: 'excellent',
-        currentStrength: 'mild'
-      },
-      activities: {
-        swimming: { status: 'safe', score: 95 },
-        surfing: { status: 'caution', score: 60 },
-        boating: { status: 'safe', score: 90 },
-        fishing: { status: 'safe', score: 85 },
-        diving: { status: 'safe', score: 90 }
-      },
-      alerts: [],
-      forecast: [
-        { time: '12:00', waveHeight: 0.9, windSpeed: 10, safety: 'safe' },
-        { time: '15:00', waveHeight: 1.0, windSpeed: 12, safety: 'safe' },
-        { time: '18:00', waveHeight: 0.7, windSpeed: 6, safety: 'safe' }
-      ],
-      lastUpdated: new Date().toISOString()
-    }
-  };
-
+  // Mock beach data - replace with actual INCOIS API
+  const beachOptions = [
+    'Marina Beach, Chennai',
+    'Kovalam Beach, Kerala',
+    'Goa Beaches',
+    'Puri Beach, Odisha',
+    'Digha Beach, West Bengal',
+    'Varkala Beach, Kerala',
+    'Radhanagar Beach, Andaman',
+    'Calangute Beach, Goa'
+  ];
   const analyzeBeach = async () => {
     if (!selectedBeach) return;
     
     setLoading(true);
+
     // Simulate API call
-    setTimeout(() => {
-      const data = mockAnalysisData[selectedBeach];
-      if (data) {
-        setAnalysisData(data);
-      } else {
-        // Generate random data for beaches not in mock data
-        setAnalysisData({
-          safetyStatus: Math.random() > 0.7 ? 'safe' : Math.random() > 0.4 ? 'caution' : 'unsafe',
-          safetyScore: Math.floor(Math.random() * 40) + 60,
-          currentConditions: {
-            waveHeight: (Math.random() * 2 + 0.5).toFixed(1),
-            windSpeed: Math.floor(Math.random() * 20) + 10,
-            windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
-            waterTemp: Math.floor(Math.random() * 8) + 25,
-            visibility: Math.floor(Math.random() * 8) + 5,
-            waterQuality: ['excellent', 'good', 'moderate'][Math.floor(Math.random() * 3)],
-            currentStrength: ['mild', 'moderate', 'strong'][Math.floor(Math.random() * 3)]
-          },
-          activities: {
-            swimming: { status: 'safe', score: Math.floor(Math.random() * 30) + 70 },
-            surfing: { status: 'caution', score: Math.floor(Math.random() * 40) + 50 },
-            boating: { status: 'safe', score: Math.floor(Math.random() * 25) + 75 },
-            fishing: { status: 'safe', score: Math.floor(Math.random() * 30) + 70 },
-            diving: { status: 'caution', score: Math.floor(Math.random() * 35) + 55 }
-          },
-          alerts: Math.random() > 0.7 ? ['Moderate wave conditions'] : [],
-          forecast: [
-            { time: '12:00', waveHeight: (Math.random() * 2 + 0.5).toFixed(1), windSpeed: Math.floor(Math.random() * 20) + 10, safety: 'safe' },
-            { time: '15:00', waveHeight: (Math.random() * 2 + 0.5).toFixed(1), windSpeed: Math.floor(Math.random() * 20) + 10, safety: 'safe' },
-            { time: '18:00', waveHeight: (Math.random() * 2 + 0.5).toFixed(1), windSpeed: Math.floor(Math.random() * 20) + 10, safety: 'safe' }
-          ],
-          lastUpdated: new Date().toISOString()
-        });
-      }
-      setLoading(false);
-    }, 1500);
+     try {
+    const response = await axios.get(`http://localhost:8080/search/analyzeData/${selectedBeach}`);
+    setAnalysisData(response.data);
+    console.log(response.data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+    setLoading(false);
+
+    // setTimeout(() => {
+    //   setAnalysisData(mockAnalysisData[selectedBeach] || null);
+    //   
+    // }, 1500);
   };
 
   const getSafetyColor = (status) => {
@@ -257,6 +69,17 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
+
+  const getStatus = (score) => {
+      if(score >= 80){
+         return "safe";
+      }
+      else if(score >= 60){
+        return "caution"
+
+      }
+      return "unsafe"
+  }
 
   const getSafetyIcon = (status) => {
     switch (status) {
@@ -304,44 +127,25 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
         {/* Beach Selection */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Search Beach Location
+            Select Beach Location
           </label>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search any beach (e.g., Goa, Marina Beach, Kovalam...)"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                searchBeaches(e.target.value);
-              }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                {searchResults.map((beach, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedBeach(beach);
-                      setSearchQuery(beach);
-                      setSearchResults([]);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-b-0"
-                  >
-                    {beach}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="mt-3">
+          <div className="flex space-x-2">
+            <select
+              value={selectedBeach}
+              onChange={(e) => setSelectedBeach(e.target.value)}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Choose a beach...</option>
+              {beachOptions.map((beach) => (
+                <option key={beach} value={beach}>{beach}</option>
+              ))}
+            </select>
             <button
               onClick={analyzeBeach}
               disabled={!selectedBeach || loading}
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              {loading ? 'Analyzing...' : 'Analyze Safety'}
+              {loading ? 'Analyzing...' : 'Analyze'}
             </button>
           </div>
         </div>
@@ -358,23 +162,23 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
         {analysisData && !loading && (
           <div className="space-y-4">
             {/* Overall Safety Status */}
-            <div className={`p-4 rounded-lg border ${getSafetyColor(analysisData.safetyStatus)}`}>
+            <div className={`p-4 rounded-lg border ${getSafetyColor(getStatus(analysisData.caution))}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  {getSafetyIcon(analysisData.safetyStatus)}
-                  <span className="font-semibold capitalize">{analysisData.safetyStatus}</span>
+                  {getSafetyIcon(getStatus(analysisData.caution))}
+                  <span className="font-semibold capitalize">{getStatus(analysisData.caution)}</span>
                 </div>
-                <div className={`text-lg font-bold ${getScoreColor(analysisData.safetyScore)}`}>
-                  {analysisData.safetyScore}/100
+                <div className={`text-lg font-bold ${getScoreColor(analysisData.caution)}`}>
+                  {analysisData.caution}/100
                 </div>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full ${
-                    analysisData.safetyScore >= 80 ? 'bg-green-500' :
-                    analysisData.safetyScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                    analysisData.caution >= 80 ? 'bg-green-500' :
+                    analysisData.caution >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}
-                  style={{ width: `${analysisData.safetyScore}%` }}
+                  style={{ width: `${analysisData.caution}%` }}
                 ></div>
               </div>
             </div>
@@ -394,28 +198,28 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
                     <Waves className="h-4 w-4 text-blue-600" />
                     <div>
                       <div className="text-xs text-gray-500">Wave Height</div>
-                      <div className="font-medium">{analysisData.currentConditions.waveHeight}m</div>
+                      <div className="font-medium">{analysisData.current.waveHeight}m</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Wind className="h-4 w-4 text-green-600" />
                     <div>
                       <div className="text-xs text-gray-500">Wind Speed</div>
-                      <div className="font-medium">{analysisData.currentConditions.windSpeed} km/h</div>
+                      <div className="font-medium">{analysisData.current.windSpeed} km/h</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Thermometer className="h-4 w-4 text-orange-600" />
                     <div>
                       <div className="text-xs text-gray-500">Water Temp</div>
-                      <div className="font-medium">{analysisData.currentConditions.waterTemp}°C</div>
+                      <div className="font-medium">{analysisData.current.waterTemperature}°C</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-4 w-4 text-purple-600" />
                     <div>
-                      <div className="text-xs text-gray-500">Visibility</div>
-                      <div className="font-medium">{analysisData.currentConditions.visibility} km</div>
+                      <div className="text-xs text-gray-500">UV_Index</div>
+                      <div className="font-medium">{analysisData.current.uv_index} km</div>
                     </div>
                   </div>
                 </div>
@@ -433,15 +237,15 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
               </button>
               {expandedSections.activities && (
                 <div className="p-3 border-t border-gray-200 space-y-2">
-                  {Object.entries(analysisData.activities).map(([activity, data]) => (
-                    <div key={activity} className="flex items-center justify-between">
-                      <span className="capitalize text-sm">{activity}</span>
+                  {Object.entries(analysisData.activity).map(([name, score]) => (
+                    <div key={name} className="flex items-center justify-between">
+                      <span className="capitalize text-sm">{name}</span>
                       <div className="flex items-center space-x-2">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getSafetyColor(data.status)}`}>
-                          {data.status}
+                        <span className={`text-xs px-2 py-1 rounded-full ${getSafetyColor(getStatus(score))}`}>
+                          {getStatus(score)}
                         </span>
-                        <span className={`text-sm font-medium ${getScoreColor(data.score)}`}>
-                          {data.score}%
+                        <span className={`text-sm font-medium ${getScoreColor(score)}`}>
+                          {score}%
                         </span>
                       </div>
                     </div>
@@ -474,7 +278,7 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
             )}
 
             {/* 3-Hour Forecast */}
-            <div className="border border-gray-200 rounded-lg">
+            {/* <div className="border border-gray-200 rounded-lg">
               <button
                 onClick={() => toggleSection('forecast')}
                 className="w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -500,13 +304,13 @@ const BeachSafetyAnalyzer = ({ isOpen, onToggle, onClose }) => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Last Updated */}
-            <div className="text-center text-xs text-gray-500 flex items-center justify-center space-x-1">
+            {/* <div className="text-center text-xs text-gray-500 flex items-center justify-center space-x-1">
               <Clock className="h-3 w-3" />
               <span>Last updated: {new Date(analysisData.lastUpdated).toLocaleTimeString()}</span>
-            </div>
+            </div> */}
           </div>
         )}
 

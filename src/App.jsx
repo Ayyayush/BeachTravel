@@ -169,7 +169,7 @@ function App() {
       </div>
 
       {/* Travel/Beach Dashboard Switcher */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <div className="flex justify-center mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1 border border-white/20">
             <button
@@ -190,13 +190,13 @@ function App() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Conditional View */}
       {currentView === 'travel' ? (
         <>
           <Hero />
-          <SearchForm
+          {/* <SearchForm
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             checkIn={checkIn}
@@ -207,7 +207,7 @@ function App() {
             setGuests={setGuests}
             selectedDestination={selectedDestination}
             setSelectedDestination={setSelectedDestination}
-          />
+          /> */}
           {selectedDestination && (
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
               <TravelPlans destination={selectedDestination} />
